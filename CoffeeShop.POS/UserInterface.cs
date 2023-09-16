@@ -1,4 +1,5 @@
 using CoffeeShop.POS.Models;
+using CoffeeShop.POS.Services;
 using Spectre.Console;
 
 namespace CoffeeShop.POS;
@@ -15,6 +16,8 @@ public static class UserInterface
                 new SelectionPrompt<Enums.MenuOptions>()
                     .Title("What would you like to do?")
                     .AddChoices(
+                        Enums.MenuOptions.AddCategory,
+                        Enums.MenuOptions.ViewAllCategories,
                         Enums.MenuOptions.AddProduct,
                         Enums.MenuOptions.DeleteProduct,
                         Enums.MenuOptions.UpdateProduct,
@@ -26,6 +29,12 @@ public static class UserInterface
 
             switch (option)
             {
+                case Enums.MenuOptions.AddCategory:
+                    CategoryService.InsertCategory();
+                    break;
+                case Enums.MenuOptions.ViewAllCategories:
+                    CategoryService.GetCategories();
+                    break;
                 case Enums.MenuOptions.AddProduct:
                     ProductService.InsertProduct();
                     break;
@@ -77,6 +86,24 @@ Name: {product.Name}"
         panel.Padding = new Padding(2, 2, 2, 2);
 
         AnsiConsole.Write(panel);
+        Console.WriteLine("Press any key to continue...");
+        Console.ReadLine();
+        Console.Clear();
+    }
+
+    public static void ShowCategoryTable(List<Category> categories)
+    {
+        var table = new Table();
+        table.AddColumn("Id");
+        table.AddColumn("Name");
+
+        foreach (var category in categories)
+        {
+            table.AddRow(category.CategoryId.ToString(), category.Name);
+        }
+
+        AnsiConsole.Write(table);
+
         Console.WriteLine("Press any key to continue...");
         Console.ReadLine();
         Console.Clear();

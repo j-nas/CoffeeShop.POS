@@ -1,7 +1,8 @@
+using CoffeeShop.POS.Controllers;
 using CoffeeShop.POS.Models;
 using Spectre.Console;
 
-namespace CoffeeShop.POS;
+namespace CoffeeShop.POS.Services;
 
 public class ProductService
 {

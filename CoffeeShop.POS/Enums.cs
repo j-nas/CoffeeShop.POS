@@ -4,6 +4,8 @@ public class Enums
 {
     internal enum MenuOptions
     {
+        AddCategory,
+        ViewAllCategories,
         AddProduct,
         DeleteProduct,
         UpdateProduct,
@@ -11,5 +13,4 @@ public class Enums
         ViewAllProducts,
         Quit,
     }
-
 }

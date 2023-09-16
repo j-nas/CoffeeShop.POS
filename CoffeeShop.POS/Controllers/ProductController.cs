@@ -1,7 +1,6 @@
 using CoffeeShop.POS.Models;
-using Spectre.Console;
 
-namespace CoffeeShop.POS
+namespace CoffeeShop.POS.Controllers
 {
     public static class ProductController
     {
