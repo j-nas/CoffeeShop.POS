@@ -1,10 +1,12 @@
 using CoffeeShop.POS.Models;
+using CoffeeShop.POS.Models.DTOs;
 using CoffeeShop.POS.Services;
+using static CoffeeShop.POS.Enums;
 using Spectre.Console;
 
 namespace CoffeeShop.POS;
 
-public static class UserInterface
+internal static class UserInterface
 {
     internal static void MainMenu()
     {
@@ -12,46 +14,157 @@ public static class UserInterface
 
         while (isAppRunning)
         {
+            Console.Clear();
             var option = AnsiConsole.Prompt(
-                new SelectionPrompt<Enums.MenuOptions>()
+                new SelectionPrompt<MainMenuOptions>()
                     .Title("What would you like to do?")
                     .AddChoices(
-                        Enums.MenuOptions.AddCategory,
-                        Enums.MenuOptions.ViewAllCategories,
-                        Enums.MenuOptions.AddProduct,
-                        Enums.MenuOptions.DeleteProduct,
-                        Enums.MenuOptions.UpdateProduct,
-                        Enums.MenuOptions.ViewProduct,
-                        Enums.MenuOptions.ViewAllProducts,
-                        Enums.MenuOptions.Quit
+                        MainMenuOptions.ManageCategories,
+                        MainMenuOptions.ManageProducts,
+                        MainMenuOptions.ManageOrders,
+                        MainMenuOptions.GenerateReport,
+                        MainMenuOptions.Quit
                     )
             );
 
             switch (option)
             {
-                case Enums.MenuOptions.AddCategory:
+                case MainMenuOptions.ManageCategories:
+                    CategoriesMenu();
+                    break;
+                case MainMenuOptions.ManageProducts:
+                    ProductsMenu();
+                    break;
+                case MainMenuOptions.ManageOrders:
+                    OrdersMenu();
+                    break;
+                case MainMenuOptions.GenerateReport:
+                    ReportService.CreateReport();
+                    break;
+                default:
+                    isAppRunning = false;
+                    break;
+            }
+        }
+    }
+
+    private static void OrdersMenu()
+    {
+        var isOrderMenuRunning = true;
+        while (isOrderMenuRunning)
+        {
+            Console.Clear();
+            var option = AnsiConsole.Prompt(
+                new SelectionPrompt<OrderMenu>()
+                    .Title("What would you like to do?")
+                    .AddChoices(
+                        OrderMenu.AddOrder,
+                        OrderMenu.GetOrders,
+                        OrderMenu.GetOrder,
+                        OrderMenu.GoBack
+                    )
+            );
+
+            switch (option)
+            {
+                case OrderMenu.AddOrder:
+                    OrderService.InsertOrder();
+                    break;
+                case OrderMenu.GetOrders:
+                    OrderService.GetOrders();
+                    break;
+                case OrderMenu.GetOrder:
+                    OrderService.GetOrder();
+                    break;
+                default:
+                    isOrderMenuRunning = false;
+                    break;
+            }
+        }
+    }
+
+    internal static void CategoriesMenu()
+    {
+        var isCategoryMenuRunning = true;
+        while (isCategoryMenuRunning)
+        {
+            Console.Clear();
+            var option = AnsiConsole.Prompt(
+                new SelectionPrompt<CategoryMenu>()
+                    .Title("What would you like to do?")
+                    .AddChoices(
+                        CategoryMenu.AddCategory,
+                        CategoryMenu.DeleteCategory,
+                        CategoryMenu.UpdateCategory,
+                        CategoryMenu.ViewAllCategories,
+                        CategoryMenu.ViewCategory,
+                        CategoryMenu.GoBack
+                    )
+            );
+
+            switch (option)
+            {
+                case CategoryMenu.AddCategory:
                     CategoryService.InsertCategory();
                     break;
-                case Enums.MenuOptions.ViewAllCategories:
+                case CategoryMenu.ViewAllCategories:
                     CategoryService.GetCategories();
                     break;
-                case Enums.MenuOptions.AddProduct:
+                case CategoryMenu.ViewCategory:
+                    CategoryService.GetCategory();
+                    break;
+                case CategoryMenu.UpdateCategory:
+                    CategoryService.UpdateCategory();
+                    break;
+                case CategoryMenu.DeleteCategory:
+                    CategoryService.DeleteCategory();
+                    break;
+                default:
+                    isCategoryMenuRunning = false;
+                    break;
+            }
+        }
+    }
+
+    internal static void ProductsMenu()
+    {
+        var isProductMenuRunning = true;
+
+        while (isProductMenuRunning)
+        {
+            Console.Clear();
+            var option = AnsiConsole.Prompt(
+                new SelectionPrompt<ProductMenu>()
+                    .Title("What would you like to do?")
+                    .AddChoices(
+                        ProductMenu.AddProduct,
+                        ProductMenu.DeleteProduct,
+                        ProductMenu.UpdateProduct,
+                        ProductMenu.ViewAllProducts,
+                        ProductMenu.ViewProduct,
+                        ProductMenu.GoBack
+                    )
+            );
+
+            switch (option)
+            {
+                case ProductMenu.AddProduct:
                     ProductService.InsertProduct();
                     break;
-                case Enums.MenuOptions.DeleteProduct:
+                case ProductMenu.DeleteProduct:
                     ProductService.DeleteProduct();
                     break;
-                case Enums.MenuOptions.UpdateProduct:
+                case ProductMenu.UpdateProduct:
                     ProductService.UpdateProduct();
                     break;
-                case Enums.MenuOptions.ViewProduct:
+                case ProductMenu.ViewProduct:
                     ProductService.GetProduct();
                     break;
-                case Enums.MenuOptions.ViewAllProducts:
+                case ProductMenu.ViewAllProducts:
                     ProductService.GetProducts();
                     break;
-                case Enums.MenuOptions.Quit:
-                    isAppRunning = false;
+                default:
+                    isProductMenuRunning = false;
                     break;
             }
         }
@@ -63,10 +176,16 @@ public static class UserInterface
         table.AddColumn("Id");
         table.AddColumn("Name");
         table.AddColumn("Price");
+        table.AddColumn("Category");
 
         foreach (var product in products)
         {
-            table.AddRow(product.ProductId.ToString(), product.Name, product.Price.ToString("C"));
+            table.AddRow(
+                product.ProductId.ToString(),
+                product.Name,
+                product.Price.ToString("C"),
+                product.Category.Name
+            );
         }
 
         AnsiConsole.Write(table);
@@ -80,10 +199,13 @@ public static class UserInterface
     {
         var panel = new Panel(
             $@"Id: {product.ProductId}
-Name: {product.Name}"
-        );
-        panel.Header = new PanelHeader("Product Info");
-        panel.Padding = new Padding(2, 2, 2, 2);
+Name: {product.Name}
+Category: {product.Category.Name}"
+        )
+        {
+            Header = new PanelHeader("Product Info"),
+            Padding = new Padding(2, 2, 2, 2)
+        };
 
         AnsiConsole.Write(panel);
         Console.WriteLine("Press any key to continue...");
@@ -107,5 +229,105 @@ Name: {product.Name}"
         Console.WriteLine("Press any key to continue...");
         Console.ReadLine();
         Console.Clear();
+    }
+
+    public static void ShowCategory(Category category)
+    {
+        var panel = new Panel(
+            $@"Id: {category.CategoryId}
+Name: {category.Name}
+Product Count: {category.Products.Count}"
+        );
+        panel.Header = new PanelHeader($"{category.Name}");
+        panel.Padding = new Padding(2, 2, 2, 2);
+
+        AnsiConsole.Write(panel);
+
+        ShowProductTable(category.Products);
+        Console.WriteLine("Press any key to continue...");
+        Console.ReadLine();
+        Console.Clear();
+    }
+
+    public static void ShowOrderTable(List<Order> orders)
+    {
+        var table = new Table();
+        table.AddColumn("Id");
+        table.AddColumn("Date");
+        table.AddColumn("Count");
+        table.AddColumn("Total Price");
+
+        foreach (Order order in orders)
+        {
+            table.AddRow(
+                order.OrderId.ToString(),
+                order.CreatedDate.ToString("g"),
+                order.OrderProducts.Sum(x => x.Quantity).ToString(),
+                order.TotalPrice.ToString("C")
+            );
+        }
+
+        AnsiConsole.Write(table);
+
+        Console.WriteLine("Press any key to continue...");
+        Console.ReadLine();
+        Console.Clear();
+    }
+
+    public static void ShowOrder(Order order)
+    {
+        var panel = new Panel(
+            $@"Id: {order.OrderId}
+Date: {order.CreatedDate:g}
+Product Count: {order.OrderProducts.Sum(x => x.Quantity).ToString()}"
+        );
+        panel.Header = new PanelHeader($"Order #{order.OrderId}");
+        panel.Padding = new Padding(2, 2, 2, 2);
+
+        AnsiConsole.Write(panel);
+    }
+
+    public static void ShowProductForOrderTable(List<ProductForOrderViewDTO> products)
+    {
+        var table = new Table();
+        table.AddColumn("Id");
+        table.AddColumn("Name");
+        table.AddColumn("Category");
+        table.AddColumn("Price");
+        table.AddColumn("Quantity");
+        table.AddColumn("Total Price");
+
+        foreach (var product in products)
+        {
+            table.AddRow(
+                product.Id.ToString(),
+                product.Name,
+                product.CategoryName,
+                product.Price.ToString("C"),
+                product.Quantity.ToString(),
+                product.TotalPrice.ToString("C")
+            );
+        }
+
+        AnsiConsole.Write(table);
+
+        Console.WriteLine("Press any key to continue...");
+        Console.ReadLine();
+        Console.Clear();
+    }
+
+    public static void ShowReportByMonth(List<MonthlyReportDTO> report)
+    {
+        var table = new Table();
+        table.AddColumn("Month");
+        table.AddColumn("Total Quantity Sold");
+        table.AddColumn("Total Sales    ");
+
+        foreach (var item in report)
+        {
+            table.AddRow(item.Month, item.TotalQuantity.ToString(), item.TotalPrice.ToString("C"));
+        }
+
+        AnsiConsole.Write(table);
     }
 }

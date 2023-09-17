@@ -1,1 +1,5 @@
-products.db*
+
+# SQLite files
+products.db**
+products.db-shm
+products.db-wal
